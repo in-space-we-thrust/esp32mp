@@ -1,6 +1,5 @@
 # sensors/temperature_sensor.py
 from base_sensor import Sensor
-import utime
 
 class TemperatureSensor(Sensor):
 
