@@ -85,12 +85,13 @@ def load_sensor_classes():
     return sensor_classes
 
 def run_sensor(sensor_class):
-    sensor_instance = sensor_class(f"Sensor #{sensor_class.ID}")
+    sensor_instance = sensor_class(f"Sensor with ids: #{sensor_class.SENSOR_IDS}")
     while True:
         if THREADS_TERMINATE:
             _thread.exit()
-        value = sensor_instance.sense()
-        send_to_serial({'type': 1, 'sensor': sensor_instance.ID, 'value': value})
+        sensor_res = sensor_instance.run()
+        for sensor_id, value in sensor_res.items():
+            send_to_serial({'type': 1, 'sensor': sensor_id, 'value': value})
         time.sleep(sensor_instance.PERIOD)
 
 sensor_classes = load_sensor_classes()
