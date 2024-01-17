@@ -2,8 +2,6 @@
 from base_sensor import Sensor
 import utime
 
-__all__ = ['TemperatureSensor']
-
 class TemperatureSensor(Sensor):
 
     class SENSOR_IDS:
