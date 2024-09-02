@@ -1,7 +1,7 @@
 import sys
 import uselect
 import json
-import _thread
+import uasyncio as asyncio
 import time
 from base_sensor import Sensor
 from base_command import Command
@@ -65,6 +65,13 @@ def read_from_serial():
     """
     return sys.stdin.readline().strip()
 
+async def handle_serial_input():
+    while True:
+        if serialPoll.poll(0):
+            message = read_from_serial()
+            handle_command(message)
+        await asyncio.sleep(0.01)
+
 
 def load_sensor_classes():
     sensor_classes = []
@@ -84,31 +91,33 @@ def load_command_classes():
     print('CC', command_classes)
     return command_classes
 
-def run_sensor(sensor_class):
+async def run_sensor(sensor_class):
     sensor_instance = sensor_class(f"Sensor with ids: #{sensor_class.SENSOR_IDS}")
     while True:
-        if THREADS_TERMINATE:
-            _thread.exit()
         sensor_res = sensor_instance.run()
         for sensor_id, value in sensor_res.items():
             out_data = OUTGOING_TELEMETRY_FORMAT.validate_and_format({'type': 1, 'sensor_id': sensor_id, 'value': value})
             if out_data:
                 send_to_serial(out_data)
-        time.sleep(sensor_instance.PERIOD)
+        await asyncio.sleep(sensor_instance.PERIOD)
 
-sensor_classes = load_sensor_classes()
 COMMAND_CLASSES = load_command_classes()
 
-for sensor_class in sensor_classes:
-    _thread.start_new_thread(run_sensor, (sensor_class,))
+
+async def main():
+    sensor_classes = load_sensor_classes()
+    for sensor_class in sensor_classes:
+        asyncio.create_task(run_sensor(sensor_class))
+
+    # Задача для обработки серийного ввода
+    asyncio.create_task(handle_serial_input())
+
+    while True:
+        await asyncio.sleep(1/100)  # Основной цикл программы
+
 
 try:
-    while True:
-        if serialPoll.poll(0): #пытааемся считать только если нам уже начали что-то сувать в порт
-            print('inc')
-            message = read_from_serial()
-            handle_command(message)
-        time.sleep(1/100) # тут слип нужен чтобы соседние треды не тормозились
+    asyncio.run(main())
 except KeyboardInterrupt:
     # CTRL+C ловим чтобы останавливать треды
     THREADS_TERMINATE = True
