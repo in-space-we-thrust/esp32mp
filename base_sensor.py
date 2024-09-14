@@ -9,8 +9,10 @@ class Sensor:
             # используется для возврата из функции sense
         }
         if self.SENSOR_IDS == None:
-            # добавить более жёсткую проверку на соответствие SENSE_RESULTS формату
-            raise NotImplementedError('Subclasses must define SENSE_RESULTS dict')
+            #TODO добавить более жёсткую проверку на соответствие SENSE_RESULTS формату
+            raise NotImplementedError('Subclasses must define SENSOR_IDS enum')
+        if self.PERIOD == None:
+            raise NotImplementedError('Subclasses must define PERIOD value')
 
     def sense(self):
         raise NotImplementedError("Subclasses must implement the run method.")

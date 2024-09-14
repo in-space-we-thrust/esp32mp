@@ -1,22 +1,27 @@
 # sensors/temperature_sensor.py
 from base_sensor import Sensor
+from machine import I2C, Pin
+from ads1x15 import ADS1115
 
-class TemperatureSensor(Sensor):
+class PressureSensor(Sensor):
+
+    def __init__(self, name):
+        super().__init__(name)
+        # инициируем тут всякие тяжелые штуки, которые нам понадобятся при каждом считывании сигнала
+        self.i2c=I2C(0, sda=Pin(21), scl=Pin(22))
+        self.adc = ADS1115(self.i2c, address=72, gain=0)
+
 
     class SENSOR_IDS:
         # эмуляция enum типа для объявления ID датчиков (чтобы далее пользоваться именами переменных, а не числами)
-        TEMPERATURE_PT1 = 1
-        TEMPERATURE_PT2 = 2
-        PRESSURE_PP1 = 17
+        PRESSURE_PP1 = 1
 
     PERIOD = 1 / 10 # период опроса, 10 раз в секунду
 
-    prev_value = 0 # хранение предыдущего значения, т.к. пока у нас синглтон-архитектура, храним прям в атрибуте класса/
-
     def sense(self):
-        # Здесь вы можете вставить код для работы с датчиком температуры
-        sense_result = {}
-        new_value = self.prev_value + 1
-        self.prev_value = new_value
-        self.SENSE_RESULTS[self.SENSOR_IDS.TEMPERATURE_PT1] = new_value
-        self.SENSE_RESULTS[self.SENSOR_IDS.PRESSURE_PP1] = new_value + 10
+        # Здесь вы можете вставить код для работы с датчиком
+        # он должен работать максимально быстро
+        raw = self.adc.read(7, 1, 3)
+        voltage = self.adc.raw_to_v(raw)
+        current = voltage/220
+        self.SENSE_RESULTS[self.SENSOR_IDS.PRESSURE_PP1] = current
