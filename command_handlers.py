@@ -11,7 +11,7 @@ class ValveCommand(Command):
         try:
             led = machine.Pin(pin_num, machine.Pin.OUT)
         except Exception as e:
-            dict_command['message'] = str(e.message)
+            dict_command['message'] = str(e)
             return dict_command
         if led.value():
             led.value(0)
