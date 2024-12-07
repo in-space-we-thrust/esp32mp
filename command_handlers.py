@@ -6,7 +6,13 @@ class ValveCommand(Command):
     COMMAND_TYPE = CommandTypes.VALVE
 
     def execute(self, dict_command):
-        led = machine.Pin(22, machine.Pin.OUT)
+        print('executing command')
+        pin_num = dict_command['valve_pin']
+        try:
+            led = machine.Pin(pin_num, machine.Pin.OUT)
+        except Exception as e:
+            dict_command['message'] = str(e.message)
+            return dict_command
         if led.value():
             led.value(0)
         else:

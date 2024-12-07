@@ -94,11 +94,14 @@ def load_command_classes():
 async def run_sensor(sensor_class):
     sensor_instance = sensor_class(f"Sensor with ids: #{sensor_class.SENSOR_IDS}")
     while True:
-        sensor_res = sensor_instance.run()
-        for sensor_id, value in sensor_res.items():
-            out_data = OUTGOING_TELEMETRY_FORMAT.validate_and_format({'type': 1, 'sensor_id': sensor_id, 'value': value})
-            if out_data:
-                send_to_serial(out_data)
+        try:
+            sensor_res = sensor_instance.run()
+            for sensor_id, value in sensor_res.items():
+                out_data = OUTGOING_TELEMETRY_FORMAT.validate_and_format({'type': 1, 'sensor_id': sensor_id, 'value': value})
+                if out_data:
+                    send_to_serial(out_data)
+        except Exception:
+            print('Error running sensor')
         await asyncio.sleep(sensor_instance.PERIOD)
 
 COMMAND_CLASSES = load_command_classes()
