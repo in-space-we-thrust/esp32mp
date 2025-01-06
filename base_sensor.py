@@ -14,12 +14,12 @@ class Sensor:
         if self.PERIOD == None:
             raise NotImplementedError('Subclasses must define PERIOD value')
 
-    def sense(self):
-        raise NotImplementedError("Subclasses must implement the run method.")
+    async def sense(self):
+        raise NotImplementedError("Subclasses must implement the sense method.")
 
-    def run(self):
+    async def run(self):
         # прокси-метод для принудительной очистки словаря, чтобы не забывали в нём предыдущие значения
         self.SENSE_RESULTS = {}
-        self.sense()
+        await self.sense()
         return self.SENSE_RESULTS
 
