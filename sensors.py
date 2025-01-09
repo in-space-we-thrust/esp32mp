@@ -1,27 +1,43 @@
 # sensors/temperature_sensor.py
+import uasyncio as asyncio
 from base_sensor import Sensor
-from machine import I2C, Pin
-from ads1x15 import ADS1115
+import yf_s201
 
-class PressureSensor(Sensor):
-
-    def __init__(self, name):
-        super().__init__(name)
-        # инициируем тут всякие тяжелые штуки, которые нам понадобятся при каждом считывании сигнала
-        self.i2c=I2C(0, sda=Pin(21), scl=Pin(22))
-        self.adc = ADS1115(self.i2c, address=72, gain=0)
-
+class TemperatureSensor(Sensor):
 
     class SENSOR_IDS:
         # эмуляция enum типа для объявления ID датчиков (чтобы далее пользоваться именами переменных, а не числами)
-        PRESSURE_PP1 = 1
+        TEMPERATURE_PT1 = 1
+        TEMPERATURE_PT2 = 2
+        PRESSURE_PP1 = 17
 
     PERIOD = 1 / 10 # период опроса, 10 раз в секунду
 
-    def sense(self):
-        # Здесь вы можете вставить код для работы с датчиком
-        # он должен работать максимально быстро
-        raw = self.adc.read(7, 1, 3)
-        voltage = self.adc.raw_to_v(raw)
-        current = voltage/220
-        self.SENSE_RESULTS[self.SENSOR_IDS.PRESSURE_PP1] = current
+    prev_value = 0 # хранение предыдущего значения, т.к. пока у нас синглтон-архитектура, храним прям в атрибуте класса/
+
+    async def sense(self):
+        # Здесь вы можете вставить код для работы с датчиком температуры
+        new_value = self.prev_value + 1
+        self.prev_value = new_value
+        self.SENSE_RESULTS[self.SENSOR_IDS.TEMPERATURE_PT1] = new_value
+        self.SENSE_RESULTS[self.SENSOR_IDS.PRESSURE_PP1] = new_value + 10
+
+
+class FlowSensor(Sensor):
+
+    def __init__(self, name):
+        super().__init__(name)
+        # Инициализируем расходомеры
+        self.yf = yf_s201.WaterFlowMeter(pulsPin=4)
+
+    class SENSOR_IDS:
+        # Объявляем ID датчиков
+        FLOW_METR1 = 4
+        FLOW_METR2 = 5       
+
+    PERIOD = 1/100  # Период опроса, раз в секунду
+
+    async def sense(self):
+        # Чтение данных с каждого расходомера и сохранение ре��ультатов
+        flowMetr2 = await self.yf.measure_flow()
+        self.SENSE_RESULTS[self.SENSOR_IDS.FLOW_METR2] = flowMetr2

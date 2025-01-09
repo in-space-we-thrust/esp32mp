@@ -95,13 +95,13 @@ async def run_sensor(sensor_class):
     sensor_instance = sensor_class(f"Sensor with ids: #{sensor_class.SENSOR_IDS}")
     while True:
         try:
-            sensor_res = sensor_instance.run()
+            sensor_res = await sensor_instance.run()  # Add await here
             for sensor_id, value in sensor_res.items():
                 out_data = OUTGOING_TELEMETRY_FORMAT.validate_and_format({'type': 1, 'sensor_id': sensor_id, 'value': value})
                 if out_data:
                     send_to_serial(out_data)
-        except Exception:
-            print('Error running sensor')
+        except Exception as e:
+            print('Error running sensor:', e)
         await asyncio.sleep(sensor_instance.PERIOD)
 
 COMMAND_CLASSES = load_command_classes()
