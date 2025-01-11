@@ -1,7 +1,18 @@
 # sensors/temperature_sensor.py
-import uasyncio as asyncio
 from base_sensor import Sensor
 import yf_s201
+
+class StatusSensor(Sensor):
+    class SENSOR_IDS:
+        # эмуляция enum типа для объявления ID датчиков (чтобы далее пользоваться именами переменных, а не числами)
+        STATUS = 0
+
+    PERIOD = 1
+
+    async def sense(self):
+        # Здесь вы можете вставить код для работы с датчиком температуры
+        self.SENSE_RESULTS[self.SENSOR_IDS.STATUS] = 1
+
 
 class TemperatureSensor(Sensor):
 
@@ -23,21 +34,21 @@ class TemperatureSensor(Sensor):
         self.SENSE_RESULTS[self.SENSOR_IDS.PRESSURE_PP1] = new_value + 10
 
 
-class FlowSensor(Sensor):
+# class FlowSensor(Sensor):
 
-    def __init__(self, name):
-        super().__init__(name)
-        # Инициализируем расходомеры
-        self.yf = yf_s201.WaterFlowMeter(pulsPin=4)
+#     def __init__(self, name):
+#         super().__init__(name)
+#         # Инициализируем расходомеры
+#         self.yf = yf_s201.WaterFlowMeter(pulsPin=4)
 
-    class SENSOR_IDS:
-        # Объявляем ID датчиков
-        FLOW_METR1 = 4
-        FLOW_METR2 = 5       
+#     class SENSOR_IDS:
+#         # Объявляем ID датчиков
+#         FLOW_METR1 = 4
+#         FLOW_METR2 = 5       
 
-    PERIOD = 1/100  # Период опроса, раз в секунду
+#     PERIOD = 1/100  # Период опроса, раз в секунду
 
-    async def sense(self):
-        # Чтение данных с каждого расходомера и сохранение ре��ультатов
-        flowMetr2 = await self.yf.measure_flow()
-        self.SENSE_RESULTS[self.SENSOR_IDS.FLOW_METR2] = flowMetr2
+#     async def sense(self):
+#         # Чтение данных с каждого расходомера и сохранение ре��ультатов
+#         flowMetr2 = await self.yf.measure_flow()
+#         self.SENSE_RESULTS[self.SENSOR_IDS.FLOW_METR2] = flowMetr2

@@ -1,7 +1,7 @@
 class CommandTypes:
+    STATUS = 0
     VALVE = 1
-    FIRMWARE = 2
-    STATUS = 3
+
 
     @classmethod
     def get_all_types_numbers(cls):
@@ -12,7 +12,6 @@ class CommandTypes:
         return res
 
 class Command:
-
     def __init__(self):
         if self.COMMAND_TYPE == None:
             raise NotImplementedError('Subclasses must define COMMAND_TYPE int')

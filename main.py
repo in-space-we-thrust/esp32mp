@@ -2,7 +2,7 @@ import sys
 import uselect
 import json
 import uasyncio as asyncio
-import time
+import ubinascii
 from base_sensor import Sensor
 from base_command import Command
 import sensors
@@ -22,13 +22,22 @@ OUTGOING_COMMAND_FORMAT = {
     "type": 1, # type: int
     "command_id": None, # type: int
     "payload": {}, # type: dict
+    "uuid": str, # type: str
 }
 
 OUTGOING_TELEMETRY_FORMAT = MessageFormat({
     "type": int, # type: int
     "sensor_id": int, # type: int
-    "value": (int, float) # type: float
+    "value": (int, float), # type: float
+    "uuid": str, # type: str
 })
+
+def get_uuid():
+    uuid_b = machine.unique_id()
+    uuid_str = ubinascii.hexlify(uuid_b).decode('utf-8')
+    return uuid_str
+
+DEVICE_UUID = get_uuid
 
 
 def send_to_serial(dict_msg):
@@ -97,7 +106,7 @@ async def run_sensor(sensor_class):
         try:
             sensor_res = await sensor_instance.run()  # Add await here
             for sensor_id, value in sensor_res.items():
-                out_data = OUTGOING_TELEMETRY_FORMAT.validate_and_format({'type': 1, 'sensor_id': sensor_id, 'value': value})
+                out_data = OUTGOING_TELEMETRY_FORMAT.validate_and_format({'type': 1, 'sensor_id': sensor_id, 'value': value, 'uuid': DEVICE_UUID})
                 if out_data:
                     send_to_serial(out_data)
         except Exception as e:
