@@ -19,7 +19,7 @@ class TemperatureSensor(Sensor):
     class SENSOR_IDS:
         # эмуляция enum типа для объявления ID датчиков (чтобы далее пользоваться именами переменных, а не числами)
         TEMPERATURE_PT1 = 1
-        TEMPERATURE_PT2 = 2
+        TEMPERATURE_PT2 = 0
         PRESSURE_PP1 = 17
 
     PERIOD = 1 / 10 # период опроса, 10 раз в секунду

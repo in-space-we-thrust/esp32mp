@@ -1,11 +1,12 @@
+import os
 import sys
 import uselect
 import json
 import uasyncio as asyncio
 import ubinascii
+import machine
 from base_sensor import Sensor
 from base_command import Command
-import sensors
 import command_handlers
 from message_formatting import MessageFormat
 
@@ -37,7 +38,7 @@ def get_uuid():
     uuid_str = ubinascii.hexlify(uuid_b).decode('utf-8')
     return uuid_str
 
-DEVICE_UUID = get_uuid
+DEVICE_UUID = get_uuid()
 
 
 def send_to_serial(dict_msg):
@@ -84,11 +85,27 @@ async def handle_serial_input():
 
 def load_sensor_classes():
     sensor_classes = []
-
-    for obj in sensors.__dict__.values():
-        if obj and isinstance(obj, type) and issubclass(obj, Sensor) and obj is not Sensor:
-            sensor_classes.append(obj)
-    print('SC', sensor_classes)
+    
+    # Get all files in current directory
+    for filename in os.listdir():
+        if filename.startswith('sensor_') and filename.endswith('.py'):
+            module_name = filename[:-3]  # Remove .py extension
+            
+            try:
+                # Import module
+                module = __import__(module_name)
+                
+                # Find sensor classes
+                for item_name in dir(module):
+                    item = getattr(module, item_name)
+                    if (isinstance(item, type) and 
+                        issubclass(item, Sensor) and 
+                        item is not Sensor):
+                        sensor_classes.append(item)
+            except ImportError as e:
+                print(f"Error importing {module_name}: {e}")
+                
+    print('SC: ', sensor_classes)
     return sensor_classes
 
 def load_command_classes():
