@@ -7,8 +7,7 @@ import ubinascii
 import machine
 from base_sensor import Sensor
 from base_command import Command
-import command_handlers
-from message_formatting import MessageFormat
+from base_message_formatting import MessageFormat
 
 
 THREADS_TERMINATE = False
