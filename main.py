@@ -79,7 +79,10 @@ async def handle_serial_input():
     while True:
         if serialPoll.poll(0):
             message = read_from_serial()
-            handle_command(message)
+            try:
+                handle_command(message)
+            except Exception as e:
+                print(f"Error handling command: {e}")
         await asyncio.sleep(0.01)
 
 
@@ -110,11 +113,27 @@ def load_sensor_classes():
 
 def load_command_classes():
     command_classes = {}
-
-    for obj in command_handlers.__dict__.values():
-        if obj and isinstance(obj, type) and issubclass(obj, Command) and obj is not Command:
-            command_classes[obj.COMMAND_TYPE] = obj()
-    print('CC', command_classes)
+    
+    # Get all files in current directory
+    for filename in os.listdir():
+        if filename.startswith('command_') and filename.endswith('.py'):
+            module_name = filename[:-3]
+            
+            try:
+                # Import module
+                module = __import__(module_name)
+                
+                # Find command classes
+                for item_name in dir(module):
+                    item = getattr(module, item_name)
+                    if (isinstance(item, type) and 
+                        issubclass(item, Command) and 
+                        item is not Command):
+                        command_classes[item.COMMAND_TYPE] = item()
+            except ImportError as e:
+                print(f"Error importing {module_name}: {e}")
+                
+    print('CC:', command_classes)
     return command_classes
 
 async def run_sensor(sensor_class):
