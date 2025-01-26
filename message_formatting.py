@@ -8,19 +8,22 @@ class MessageFormat(dict):
             if key in telemetry_data:
                 actual_value = telemetry_data[key]
                 if isinstance(expected_types, type):
-                    if isinstance(actual_value, expected_types):
+                    # Special handling for string type
+                    if expected_types is str and isinstance(actual_value, (str, bytes)):
+                        formatted_data[key] = str(actual_value)
+                    elif isinstance(actual_value, expected_types):
                         formatted_data[key] = actual_value
                     else:
                         print(f'Wrong value format for {self.__class__.__name__}')
-                        return None  # Валидация не прошла
-                else: # предполагаем что нам передали итерабл с типами
-                    if any(issubclass(type(actual_value), t) for t in expected_types):
+                        return None
+                else:  # handle tuple of types
+                    if any(isinstance(actual_value, t) for t in expected_types):
                         formatted_data[key] = actual_value
                     else:
                         print(f'Wrong value format for {self.__class__.__name__}')
-                        return None  # Валидация не прошла
+                        return None
             else:
                 print(f'Key missing format for {self.__class__.__name__}')
-                return None  # Ключ отсутствует в данных
+                return None
 
-        return formatted_data   # Возвращаем результат валидации и отформатированные данные
+        return formatted_data
