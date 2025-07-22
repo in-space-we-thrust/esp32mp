@@ -1,6 +1,8 @@
 class CommandTypes:
     STATUS = 0
     VALVE = 1
+    SERVO = 2
+    FIRE = 3
 
 
     @classmethod
