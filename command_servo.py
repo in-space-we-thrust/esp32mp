@@ -12,6 +12,9 @@ class ServoCommand(Command):
         super().__init__()
         self.servo_160kg_pin = 16
         self.servo_35kg_pin = 17
+        # Initialize servo
+        self.servo_160kg = Servo(self.servo_160kg_pin, max_angle=270)
+        self.servo_35kg = Servo(self.servo_35kg_pin, max_angle=270)
 
 
     def execute(self, dict_command):
@@ -21,33 +24,31 @@ class ServoCommand(Command):
         Expected command format:
         {
             "type": CommandTypes.SERVO,
-            "servo_scenario_num": int,
-            "servo_pin": int
+            "servo_scenario_num": int
         }
         """
         print('Executing servo command')
         
         try:
             scenario_num = dict_command.get('servo_scenario_num')
-            servo_pin = dict_command.get('servo_pin')
             
-            if scenario_num is None or servo_pin is None:
+            if scenario_num is None:
                 return {
                     'type': dict_command['type'],
                     'command_id': dict_command.get('command_id'),
                     'result': 0,
-                    'error': 'Missing servo_scenario_num or servo_pin'
+                    'error': 'Missing servo_scenario_num'
                 }
-            
-            # Initialize servo
-            self.servo_160kg = Servo(self.servo_160kg_pin, max_angle=270)
-            self.servo_35kg = Servo(self.servo_35kg_pin, max_angle=270)
             
             # Execute scenario
             if scenario_num == 1:
                 self._scenario_1()
             elif scenario_num == 2:
                 self._scenario_2()
+            elif scenario_num == 3:
+                self._scenario_3()
+            elif scenario_num == 4:
+                self._scenario_4()
             else:
                 return {
                     'type': dict_command['type'],
@@ -76,19 +77,15 @@ class ServoCommand(Command):
         print('Executing servo scenario 1: Sweep movement')
         
         # Move servo to 0 degrees
-        self.servo_160kg.move(0)
-        time.sleep(1)
+        self.servo_160kg.move(0, speed=30)
+        time.sleep(2)
         
         # Sweep from 0 to 180 degrees with smooth movement
-        self.servo_160kg.move(90, speed=30)  # Move to 90 degrees at 30 deg/sec
-        time.sleep(3)  # Wait for movement to complete
+        self.servo_35kg.move(0, speed=30)  # Move to 90 degrees at 30 deg/sec
+        time.sleep(2)  # Wait for movement to complete
         
-        self.servo_160kg.move(180, speed=30)  # Move to 180 degrees
-        time.sleep(3)  # Wait for movement to complete
+        self.servo_160kg.move(100, speed=30)  # Move to 180 degrees
         
-        # Move back to center position
-        self.servo_160kg.move(90, speed=60)  # Faster return to center
-        time.sleep(2)
         print('Servo scenario 1 completed')
     
     def _scenario_2(self):
@@ -97,23 +94,43 @@ class ServoCommand(Command):
         """
         print('Executing servo scenario 2: Oscillation movement')
         
-        # Start at center position
-        self.servo_35kg.move(90)
-        time.sleep(1)
-        
-        # Oscillate 3 times between 45 and 135 degrees
-        for i in range(3):
-            print(f'Oscillation cycle {i+1}/3')
-            
-            # Move to 45 degrees
-            self.servo_35kg.move(45, speed=45)
-            time.sleep(2)
-            
-            # Move to 135 degrees
-            self.servo_35kg.move(135, speed=45)
-            time.sleep(2)
-        
-        # Return to center
-        self.servo_35kg.move(90, speed=60)
+        # Move servo to 0 degrees
+        self.servo_160kg.move(0, speed=30)
         time.sleep(2)
+        
+        # Sweep from 0 to 180 degrees with smooth movement
+        self.servo_35kg.move(90, speed=30)  # Move to 90 degrees at 30 deg/sec
+        time.sleep(2)  # Wait for movement to complete
+        
+        self.servo_160kg.move(100, speed=30)  # Move to 180 degrees
+        
         print('Servo scenario 2 completed')
+
+    def _scenario_3(self):
+        """
+        Scenario 2: Servo oscillation between two positions
+        """
+        print('Executing servo scenario 2: Oscillation movement')
+        
+        # Move servo to 0 degrees
+        self.servo_160kg.move(0, speed=30)
+        time.sleep(2)
+        
+        # Sweep from 0 to 180 degrees with smooth movement
+        self.servo_35kg.move(180, speed=30)  # Move to 90 degrees at 30 deg/sec
+        time.sleep(2)  # Wait for movement to complete
+        
+        self.servo_160kg.move(100, speed=30)  # Move to 180 degrees
+        
+        print('Servo scenario 1 completed')
+
+    def _scenario_4(self):
+        """
+        Scenario 2: Servo oscillation between two positions
+        """
+        print('Executing servo scenario 4: Oscillation movement')
+        
+        # Move servo to 0 degrees FAST
+        self.servo_160kg.move(0)
+        
+        print('Servo scenario 4 completed')
