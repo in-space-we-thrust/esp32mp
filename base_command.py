@@ -3,6 +3,7 @@ class CommandTypes:
     VALVE = 1
     SERVO = 2
     FIRE = 3
+    LED_TIMER = 4
 
 
     @classmethod
